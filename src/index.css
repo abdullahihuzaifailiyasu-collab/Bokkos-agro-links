@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  header, footer, nav, .print\:hidden {
+    display: none !important;
+  }
+  #printable-waybill-doc, #printable-certificate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

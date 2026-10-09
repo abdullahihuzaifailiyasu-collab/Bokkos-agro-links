@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if true; // Public directory for buyer/farmer identification
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || request.resource.data.role == resource.data.role);
+      allow delete: if false; // Disallow accidental user purge
+    }
+
+    // Farmer & Buyer Profiles subcollections or docs
+    match /farmerProfiles/{profileId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /buyerProfiles/{profileId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Produce Listings (Marketplace)
+    match /listings/{listingId} {
+      allow read: if true; // Publicly visible to all buyers and visitors
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Purchase Requests / Orders
+    match /purchaseRequests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Transactions / Escrow Contracts
+    match /transactions/{txnId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // Escrow Milestone Vault
+    match /escrowVault/{escrowId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Cooperative Pools
+    match /cooperativePools/{poolId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // Quality Passports
+    match /qualityPassports/{passportId} {
+      allow read: if true;
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // Notifications
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+  }
+}
